@@ -1,5 +1,6 @@
 import asyncio
 import dataclasses
+import typing
 import uuid
 import asyncpg
 
@@ -10,6 +11,20 @@ class Dog:
     id: uuid.UUID
     name: str
     weight: int
+
+
+T = typing.TypeVar("T")
+
+
+async def query(
+    conn: asyncpg.Connection,
+    data_type: typing.Type[T],
+    sql: str,
+    params: typing.Sequence[typing.Any] = (),
+) -> typing.AsyncGenerator[T, None]:
+    values = await conn.fetch(sql, *params)
+    for r in values:
+        yield data_type(**dict(r.items()))
 
 
 async def run():
@@ -30,9 +45,7 @@ async def run():
         dog.name,
         dog.weight,
     )
-    values = await conn.fetch("SELECT * FROM dogs")
-    for r in values:
-        d = Dog(**dict(r.items()))
+    async for d in query(conn, Dog, "SELECT * FROM dogs"):
         print(d)
     await conn.execute(
         "DELETE FROM dogs WHERE id = $1",
