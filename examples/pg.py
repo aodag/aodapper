@@ -27,7 +27,16 @@ async def query(
         yield data_type(**dict(r.items()))
 
 
-async def run():
+def columns(data_type: typing.Type, prefix: typing.Optional[str] = None) -> str:
+    return ", ".join(
+        [
+            (f"{prefix}.{f.name}" if prefix else f.name)
+            for f in dataclasses.fields(data_type)
+        ]
+    )
+
+
+async def run() -> None:
     conn = await asyncpg.connect(
         user="user",
         password="password",
@@ -45,7 +54,9 @@ async def run():
         dog.name,
         dog.weight,
     )
-    async for d in query(conn, Dog, "SELECT * FROM dogs"):
+    async for d in query(
+        conn, Dog, f"SELECT {columns(Dog, prefix='d')} FROM dogs AS d"
+    ):
         print(d)
     await conn.execute(
         "DELETE FROM dogs WHERE id = $1",
