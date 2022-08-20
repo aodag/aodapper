@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=45", "setuptools_scm[toml]>=6.2"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "aodapper"
+readme = "README.md"
+dependencies = [
+  "asyncpg",
+]
+dynamic = ["version"]
+
+[project.optional-dependencies]
+dev = ["black", "flake8", "mypy", "twine", "build", "nox"]
+testing = []
+
+[tool.setuptools.packages]
+find = {exclude = ["examples"]}
+
+[tool.setuptools_scm]
