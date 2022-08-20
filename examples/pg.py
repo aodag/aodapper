@@ -27,11 +27,16 @@ async def query(
         yield data_type(**dict(r.items()))
 
 
-def columns(data_type: typing.Type, prefix: typing.Optional[str] = None) -> str:
+def columns(
+    data_type: typing.Type,
+    prefix: typing.Optional[str] = None,
+    excludes: typing.Sequence[str] = [],
+) -> str:
     return ", ".join(
         [
             (f"{prefix}.{f.name}" if prefix else f.name)
             for f in dataclasses.fields(data_type)
+            if f.name not in excludes
         ]
     )
 
